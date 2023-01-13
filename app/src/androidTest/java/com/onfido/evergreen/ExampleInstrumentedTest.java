@@ -1,4 +1,4 @@
-package com.example.webviewandroid;
+package com.onfido.evergreen;
 
 import android.content.Context;
 
