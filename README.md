@@ -6,7 +6,7 @@ A sample Android native app integration with Onfido’s [Web SDK](https://docume
 This app is a simple demonstration of the minimum configurations that are required to integrate with [onfido-sdk-ui](https://documentation.onfido.com/sdk/web/) using Android native WebView component. The example uses [Smart Capture Link](https://developers.onfido.com/guide/smart-capture-link).
 
 You can find more detailed documentation here:
-- [WKWebView](https://docs.usercentrics.com/cmp_in_app_sdk/latest/features/webview-continuity/)
+- [WebView](https://docs.usercentrics.com/cmp_in_app_sdk/latest/features/webview-continuity/)
 
 - [onfido-sdk-ui](https://documentation.onfido.com/sdk/web/)
 
