@@ -1,46 +1,69 @@
 package com.onfido.evergreen
 
 import android.Manifest
-import androidx.appcompat.app.AppCompatActivity
-import android.webkit.WebView
-import android.webkit.ValueCallback
 import android.annotation.SuppressLint
-import android.os.Bundle
-import android.webkit.WebChromeClient
-import android.webkit.PermissionRequest
-import android.content.Intent
-import android.provider.MediaStore
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.core.content.FileProvider
-import android.webkit.WebViewClient
-import android.app.ProgressDialog
-import android.graphics.Bitmap
-import kotlin.Throws
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.os.StrictMode
+import android.provider.MediaStore
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.webkit.PermissionRequest
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.FileProvider
 import java.io.File
 import java.io.IOException
-import java.lang.Exception
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+
+data class Configuration(
+    val version: String = "latest",
+    val url: String? = null
+)
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private var mFilePathCallback: ValueCallback<Array<Uri>>? = null
     private var mCameraPhotoPath: Uri? = null
+    private val configuration: Configuration = Configuration()
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint("SetJavaScriptEnabled", "JavascriptInterface")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Temporary workaround to perform requests (get applicantId, token, and workflowRunId)
+        val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
+
         setContentView(R.layout.activity_main)
 
         webView = findViewById(R.id.webview)
 
+        val onfidoSdk = OnfidoSdk(this, webView)
+        val applicantId = onfidoSdk.getApplicantId()
+        val sdkToken = onfidoSdk.getSdkToken(applicantId)
+        val workflowRunId = onfidoSdk.getWorkflowRunId(applicantId)
+
+        onfidoSdk.initSdk(
+            """{
+                    "token": "$sdkToken",
+                    "workflowRunId": "$workflowRunId"
+            }""".trimIndent(), EventHandler(
+                onError = { showMessage("Error") },
+                onComplete = { showMessage("Complete") }
+            )
+        )
 
         with(webView) {
             settings.javaScriptEnabled = true
@@ -51,10 +74,21 @@ class MainActivity : AppCompatActivity() {
             webChromeClient = ChromeClient()
 
             setLayerType(View.LAYER_TYPE_HARDWARE, null)
-            loadUrl("https://crowd-testing.eu.onfido.app/f/da5ed749-9d93-4026-bf43-4e96c02e5f15")
+
+            addJavascriptInterface(onfidoSdk.getSdkCallbackJsInterface(), "sdk")
+            loadUrl("https://sdk.onfido.com/blank")
         }
 
         requestPermissions(this)
+    }
+
+    private fun showMessage(title: String) {
+        AlertDialog.Builder(this).setTitle(title)
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
     }
 
     inner class ChromeClient : WebChromeClient() {
@@ -123,37 +157,32 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        // Check if the key event was the Back button and if there's history
-        if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
-            webView.goBack()
-            return true
-        }
-        // If it wasn't the Back key or there's no web page history, bubble up to the default
-        // system behavior (probably exit the activity)
-        return super.onKeyDown(keyCode, event)
-    }
-
     inner class Client : WebViewClient() {
-        private var progressDialog: ProgressDialog? = null
-
-        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-            if (progressDialog == null) {
-                progressDialog = ProgressDialog(this@MainActivity)
-                progressDialog!!.setMessage("Loading...")
-                progressDialog!!.show()
-            }
-        }
-
         override fun onPageFinished(view: WebView?, url: String?) {
-            try {
-                if (progressDialog != null && progressDialog!!.isShowing) {
-                    progressDialog!!.dismiss()
-                    progressDialog = null
-                }
-            } catch (exception: Exception) {
-                exception.printStackTrace()
-            }
+            super.onPageFinished(view, url)
+            val src = configuration.url
+                ?: "https://sdk.onfido.com/capture/core/${configuration.version}/Onfido.iife.js"
+
+            // blank page has been loaded, now inject the sdk
+            webView.evaluateJavascript(
+                """
+            (() => {
+                const script = document.createElement('script');
+                script.src = "$src";
+                script.onload = () => sdk.loadComplete();
+                script.onerror = (e) => {
+                    console.error(e);
+                    sdk.loadError(e.message || '')
+                };
+                document.head.appendChild(script);
+
+                window.addEventListener('Onfido.sdk.getUserMedia', () => {
+                    console.log("getUserMedia");
+                    sdk.getUserMedia();
+                });
+            })()
+            """.trimIndent(), null
+            )
         }
     }
 
@@ -167,6 +196,17 @@ class MainActivity : AppCompatActivity() {
         val imageFileName = "img_" + timeStamp + "_"
         val storageDir = this@MainActivity.filesDir
         return File.createTempFile(imageFileName, ".jpg", storageDir)
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        // Check if the key event was the Back button and if there's history
+        if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
+            webView.goBack()
+            return true
+        }
+        // If it wasn't the Back key or there's no web page history, bubble up to the default
+        // system behavior (probably exit the activity)
+        return super.onKeyDown(keyCode, event)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {

@@ -1,3 +1,5 @@
+.idea
+**/env
 *.iml
 .gradle
 /local.properties
