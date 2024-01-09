@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
 
         webView = findViewById(R.id.webview)
 
-        val onfidoSdk = OnfidoSdk(this, webView)
+        val onfidoSdk = OnfidoSdk(webView)
         val applicantId = onfidoSdk.getApplicantId()
         val sdkToken = onfidoSdk.getSdkToken(applicantId)
         val workflowRunId = onfidoSdk.getWorkflowRunId(applicantId)
@@ -175,11 +175,6 @@ class MainActivity : AppCompatActivity() {
                     sdk.loadError(e.message || '')
                 };
                 document.head.appendChild(script);
-
-                window.addEventListener('Onfido.sdk.getUserMedia', () => {
-                    console.log("getUserMedia");
-                    sdk.getUserMedia();
-                });
             })()
             """.trimIndent(), null
             )

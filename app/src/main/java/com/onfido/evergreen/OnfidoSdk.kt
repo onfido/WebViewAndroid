@@ -1,5 +1,7 @@
 package com.onfido.evergreen
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
@@ -9,11 +11,14 @@ import com.onfido.models.SdkToken
 import com.onfido.models.WorkflowRun
 import io.github.cdimascio.dotenv.dotenv
 
-class OnfidoSdk(private var activity: MainActivity, private var webView: WebView) {
+class OnfidoSdk(private var webView: WebView) {
+    private val handler = Handler(Looper.getMainLooper())
+
     private var sdkLoadedCallback: (() -> Unit)? = null
     private var initialized: Boolean = false
     private var sdkLoaded: Boolean = false
     private var eventHandler: EventHandler? = null
+
 
     private val dotenv = dotenv { directory = "./assets"; filename = "env" }
     private val onfidoApi = Onfido.builder()
@@ -55,14 +60,14 @@ class OnfidoSdk(private var activity: MainActivity, private var webView: WebView
             error("Sdk cannot be initialized multiple times")
         }
 
-        this.eventHandler = handler
+        eventHandler = handler
         initialized = true
 
         if (sdkLoaded) {
-            this.bootstrapSdk(parameter)
+            bootstrapSdk(parameter)
         } else {
-            this.sdkLoadedCallback = {
-                this.bootstrapSdk(parameter)
+            sdkLoadedCallback = {
+                bootstrapSdk(parameter)
             }
         }
     }
@@ -84,8 +89,8 @@ class OnfidoSdk(private var activity: MainActivity, private var webView: WebView
         webView.evaluateJavascript(js, null)
     }
 
-    private fun runOnUiThread(action: () -> Unit) {
-        activity.runOnUiThread(action)
+    private fun runOnThread(action: () -> Unit) {
+        handler.post { action() }
     }
 
     fun getSdkCallbackJsInterface(): Any {
@@ -93,7 +98,7 @@ class OnfidoSdk(private var activity: MainActivity, private var webView: WebView
             @JavascriptInterface
             fun loadComplete() {
                 sdkLoaded = true
-                runOnUiThread {
+                runOnThread {
                     sdkLoadedCallback?.invoke()
                 }
             }
@@ -109,22 +114,14 @@ class OnfidoSdk(private var activity: MainActivity, private var webView: WebView
             @JavascriptInterface
             fun onComplete(data: String?) {
                 eventHandler?.onComplete?.let {
-                    runOnUiThread { it(data) }
+                    runOnThread { it(data) }
                 }
             }
 
             @JavascriptInterface
             fun onError(e: String?) {
                 eventHandler?.onError?.let {
-                    runOnUiThread { it(e) }
-                }
-            }
-
-            @JavascriptInterface
-            fun getUserMedia() {
-                runOnUiThread {
-//                     TODO request permissions that might be needed
-//                    requestPermissions()
+                    runOnThread { it(e) }
                 }
             }
         }
