@@ -1,9 +1,6 @@
 name: Espresso Tests
 
-on:
-  push:
-    branches:
-      - '*'
+on: [ push ]
 
 jobs:
   build:
