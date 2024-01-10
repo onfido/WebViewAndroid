@@ -1,0 +1,31 @@
+name: Espresso Tests
+
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+
+      - name: Set up Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 32
+          script: emulator
+          headless: true
+
+      - name: Build and run Espresso tests
+        run: |
+          ./gradlew connectedAndroidTest
