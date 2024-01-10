@@ -1,5 +1,5 @@
 # WebView Android
-A sample Android native app integration with Onfido’s [Web SDK](https://documentation.onfido.com/sdk/web/), using [Android WebView] (https://developer.android.com/reference/android/webkit/WebView) component.
+A sample Android native app integration with Onfido’s [Web SDK](https://documentation.onfido.com/sdk/web/), using [Android WebView](https://developer.android.com/reference/android/webkit/WebView) component.
 
 ## Summary
 
