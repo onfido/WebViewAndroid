@@ -17,6 +17,13 @@ jobs:
           distribution: 'adopt'
           cache: 'gradle'
 
+      - name: Create env file
+        run: |
+          cd app/src/main/assets
+          touch env
+          echo API_TOKEN="API_TOKEN" >> env
+          echo WORKFLOW_ID="$WORKFLOW_ID" >> env
+
       - name: Run connected tests
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
