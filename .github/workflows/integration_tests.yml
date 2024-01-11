@@ -18,11 +18,14 @@ jobs:
           cache: 'gradle'
 
       - name: Create env file
+        env:
+          API_TOKEN: ${{secrets.$API_TOKEN}}
+          WORKFLOW_ID: ${{secrets.$WORKFLOW_ID}}
         run: |
           mkdir app/src/main/assets
           cd app/src/main/assets
           touch env
-          echo API_TOKEN="API_TOKEN" >> env
+          echo API_TOKEN="$API_TOKEN" >> env
           echo WORKFLOW_ID="$WORKFLOW_ID" >> env
 
       - name: Run connected tests
