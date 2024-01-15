@@ -28,7 +28,7 @@ android {
                 pixelFiveApi32(ManagedVirtualDevice) {
                     device = "Pixel 5"
                     apiLevel = 32
-                    systemImageSource = "aosp"
+                    systemImageSource = "google"
                 }
             }
         }

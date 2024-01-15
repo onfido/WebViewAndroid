@@ -1,6 +1,7 @@
 package com.onfido.evergreen
 
-import android.Manifest
+import android.Manifest.permission.CAMERA
+import android.Manifest.permission.RECORD_AUDIO
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -18,12 +19,10 @@ import org.junit.runner.RunWith
 @LargeTest
 class WebViewIntegrationTest {
     @get:Rule
-    var permissionCamera: GrantPermissionRule =
-        GrantPermissionRule.grant(Manifest.permission.CAMERA)
+    var permissionCamera: GrantPermissionRule = GrantPermissionRule.grant(CAMERA)
 
     @get:Rule
-    var permissionAudio: GrantPermissionRule =
-        GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
+    var permissionAudio: GrantPermissionRule = GrantPermissionRule.grant(RECORD_AUDIO)
 
     @get:Rule
     var activityScenarioRule = activityScenarioRule<MainActivity>()
