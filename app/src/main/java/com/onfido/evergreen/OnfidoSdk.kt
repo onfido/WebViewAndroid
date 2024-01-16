@@ -19,10 +19,9 @@ class OnfidoSdk(private var webView: WebView) {
     private var sdkLoaded: Boolean = false
     private var eventHandler: EventHandler? = null
 
-
     private val dotenv = dotenv { directory = "./assets"; filename = "env" }
     private val onfidoApi = Onfido.builder()
-        .apiToken(dotenv["API_KEY"])
+        .apiToken(dotenv["API_TOKEN"])
         .regionEU()
         .build()
 
