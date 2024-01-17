@@ -19,9 +19,11 @@ import android.graphics.Bitmap
 import kotlin.Throws
 import android.app.Activity
 import android.net.Uri
+import android.net.http.SslError
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.webkit.SslErrorHandler
 import androidx.core.app.ActivityCompat
 import java.io.File
 import java.io.IOException
@@ -60,7 +62,6 @@ class MainActivity : AppCompatActivity() {
     inner class ChromeClient : WebChromeClient() {
         override fun onPermissionRequest(request: PermissionRequest) {
             val permissions = arrayOf(
-                PermissionRequest.RESOURCE_AUDIO_CAPTURE,
                 PermissionRequest.RESOURCE_VIDEO_CAPTURE
             )
             request.grant(permissions)
@@ -137,6 +138,10 @@ class MainActivity : AppCompatActivity() {
     inner class Client : WebViewClient() {
         private var progressDialog: ProgressDialog? = null
 
+        override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+            handler?.proceed()
+        }
+
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             if (progressDialog == null) {
                 progressDialog = ProgressDialog(this@MainActivity)
@@ -201,21 +206,13 @@ class MainActivity : AppCompatActivity() {
         private const val REQUEST_PERMISSIONS = 1
         private val REQUIRED_PERMISSIONS = arrayOf(
             Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.MODIFY_AUDIO_SETTINGS
         )
 
         fun requestPermissions(activity: Activity?) {
             // Check if we have read or write permission
             val cameraPermission =
                 ActivityCompat.checkSelfPermission(activity!!, Manifest.permission.CAMERA)
-            val audioPermission =
-                ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO)
-            val modifyAudioPermission = ActivityCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.MODIFY_AUDIO_SETTINGS
-            )
-            if (cameraPermission != PackageManager.PERMISSION_GRANTED || audioPermission != PackageManager.PERMISSION_GRANTED || modifyAudioPermission != PackageManager.PERMISSION_GRANTED) {
+            if (cameraPermission != PackageManager.PERMISSION_GRANTED ) {
                 // We don't have permission so prompt the user
                 ActivityCompat.requestPermissions(
                     activity,

@@ -23,13 +23,8 @@ You can find more detailed documentation here:
 ```AndroidManifest.xml
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 ```    
 
 - Also you will need to implement `WebChromeClient` to provide a way to provide required permissions 
 and implement how do you want to handle the file chooser and capturing image from camera as this is not implemented by default in `WebView`.
 For reference check the `MainActivity.kt` code sample.
-
-
-  
