@@ -1,6 +1,12 @@
 name: Espresso Tests
 
-on: [ push, workflow_dispatch ]
+on:
+  workflow_dispatch:
+    inputs:
+      SDK_TARGET_VERSION:
+        description: 'Target a specific SDK version. Otherwise latest'
+        required: false
+  push:
 
 jobs:
   build:
@@ -48,6 +54,7 @@ jobs:
         env:
           API_TOKEN: ${{secrets.API_TOKEN}}
           WORKFLOW_ID: ${{secrets.WORKFLOW_ID}}
+          SDK_TARGET_VERSION: ${{github.event.inputs.SDK_TARGET_VERSION}}
         run: |
           mkdir app/src/main/assets
           cd app/src/main/assets
