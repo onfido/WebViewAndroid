@@ -8,15 +8,12 @@ on:
         required: false
   push:
 
-env:
-  SDK_TARGET_VERSION: ${{ github.event.inputs.SDK_TARGET_VERSION }}
-
 jobs:
   build:
     runs-on: macos-latest
     strategy:
       matrix:
-        api-level: [ 32 ]
+        api-level: [ 34 ]
 
     steps:
       - name: Checkout
@@ -57,6 +54,7 @@ jobs:
         env:
           API_TOKEN: ${{secrets.API_TOKEN}}
           WORKFLOW_ID: ${{secrets.WORKFLOW_ID}}
+          SDK_TARGET_VERSION: ${{ github.event.inputs.SDK_TARGET_VERSION }}
         run: |
           mkdir app/src/main/assets
           cd app/src/main/assets
