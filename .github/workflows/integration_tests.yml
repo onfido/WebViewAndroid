@@ -1,6 +1,15 @@
 name: Espresso Tests
 
-on: [ push, workflow_dispatch ]
+on:
+  workflow_dispatch:
+    inputs:
+      SDK_TARGET_VERSION:
+        description: 'Target a specific SDK version. Otherwise latest'
+        required: false
+  push:
+
+env:
+  SDK_TARGET_VERSION: ${{ github.event.inputs.SDK_TARGET_VERSION }}
 
 jobs:
   build:

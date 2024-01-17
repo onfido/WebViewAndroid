@@ -28,7 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 data class Configuration(
-    val version: String = "latest",
+    val version: String = System.getenv("SDK_TARGET_VERSION") ?: "latest",
     val url: String? = null
 )
 

@@ -27,6 +27,10 @@ class WebViewIntegrationTest {
     @get:Rule
     var activityScenarioRule = activityScenarioRule<MainActivity>()
 
+    @Rule
+    @JvmField
+    val mRetryTestRule = RetryTestRule()
+
     @Test
     fun openApp() {
         onView(withId(R.id.webview)).check(matches(isDisplayed()))
