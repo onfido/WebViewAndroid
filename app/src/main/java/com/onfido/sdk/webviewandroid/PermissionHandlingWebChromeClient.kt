@@ -17,6 +17,12 @@ internal class PermissionHandlingWebChromeClient(
     override fun getDefaultVideoPoster(): Bitmap = createBitmap(10, 10)
 
     override fun onPermissionRequest(request: PermissionRequest) {
+
+        if (request.origin.toString() != "https://sdk.onfido.com/") {
+            request.deny()
+            return
+        }
+
         val grants = mutableListOf<String>()
         val requiredPermissions = mutableListOf<String>()
         request.resources?.forEach { resource ->
